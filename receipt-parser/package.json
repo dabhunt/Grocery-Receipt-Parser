@@ -1,0 +1,48 @@
+{
+  "private": true,
+  "name": "receipt-parser",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "start": "per-env",
+    "start:production": "npm run -s serve",
+    "start:development": "npm run -s dev",
+    "build": "concurrently \"npx tsm src\" \"preact build\"",
+    "serve": "concurrently \"npx tsm src -w\" \"preact build && preact watch\"",
+    "dev": "concurrently \"npx tsm src -w\" \"preact watch\"",
+    "lint": "eslint src",
+    "test": "jest"
+  },
+  "eslintConfig": {
+    "extends": "eslint-config-synacor"
+  },
+  "eslintIgnore": [
+    "build/*"
+  ],
+  "devDependencies": {
+    "@types/node-sass": "^4.11.0",
+    "eslint": "^4.9.0",
+    "eslint-config-synacor": "^2.0.2",
+    "jest": "^21.2.1",
+    "jest-preset-preact": "^1.0.0",
+    "node-sass": "^4.12.0",
+    "per-env": "^1.0.2",
+    "preact-cli": "^3.0.0-rc.5",
+    "preact-render-spy": "^1.2.1",
+    "sass-loader": "^7.3.1",
+    "ts-loader": "^6.2.0",
+    "typed-scss-modules": "^0.0.12",
+    "typescript": "^3.6.3",
+    "webpack": "^4.41.0"
+  },
+  "dependencies": {
+    "concurrently": "^5.0.0",
+    "preact": "^10.0.0-rc.3",
+    "preact-compat": "^3.17.0",
+    "preact-render-to-string": "^4.1.0",
+    "preact-router": "^3.0.1"
+  },
+  "jest": {
+    "preset": "jest-preset-preact"
+  }
+}

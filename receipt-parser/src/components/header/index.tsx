@@ -5,16 +5,17 @@ export default class Header extends Component {
 	public render() {
 		return (
 			<header class={style.header}>
-				<h1>Preact App</h1>
+				<Link activeClassName={style.active} href="/">
+						<img className = {style.logo} src="/assets/icons/logo.svg"></img>
+						<h1>Pocket Chef</h1>					
+                </Link>
+				
 				<nav>
 					<Link activeClassName={style.active} href="/">
 						Home
                     </Link>
 					<Link activeClassName={style.active} href="/profile">
-						Me
-                    </Link>
-					<Link activeClassName={style.active} href="/profile/john">
-						John
+						Profile
                     </Link>
 				</nav>
 			</header>

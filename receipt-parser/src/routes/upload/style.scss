@@ -1,3 +1,4 @@
+@import '../../styles/variables.scss';
 $hero-image-url: "/assets/photos/heroimage.jpg";
 .home {
 	padding: 56px 20px;
@@ -14,17 +15,29 @@ $hero-image-url: "/assets/photos/heroimage.jpg";
 	position: relative;
 	margin:0;
   }
-
-  .herotext {
+  .heroText {
+	text-align: center;
+	line-height: 0;
+	margin: 0px;
+	padding : 25px;
+	color: white;
+  }
+  .containerText {
 	text-align: center;
 	position: absolute;
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	color: white;
+	color: black;
+  }
+  .elem{
+	background-image:linear-gradient(rgba(1, 1, 0, 0.7), rgba(1, 0, 0, 0.3));
+	padding: 50px;
+	padding-top: 30px;
+	border-radius: 50px;
   }
   .button{
-	background-color: #F4805A;
+	background-color: $primaryColor;
 	border: none;
 	color: white;
 	padding: 20px;
@@ -36,4 +49,14 @@ $hero-image-url: "/assets/photos/heroimage.jpg";
 	font-size: 16px;
 	margin: 4px 2px;
 	border-radius: 50px;
+  }
+  .container{
+	  background-color: $offWhite;
+	  padding: 5px;
+  }
+  #loading{
+	  max-width: 80px;
+	  max-inline-size: 80px;
+	 width: 80px;
+	 height: 80px;
   }

@@ -1,3 +1,4 @@
+@import '../../styles/variables.scss';
 $hero-image-url: "/assets/photos/heroimage.jpg";
 .home {
 	padding: 56px 20px;
@@ -24,7 +25,7 @@ $hero-image-url: "/assets/photos/heroimage.jpg";
 	color: white;
   }
   .button{
-	background-color: #F4805A;
+	background-color: $primaryColor;
 	border: none;
 	color: white;
 	padding: 20px;

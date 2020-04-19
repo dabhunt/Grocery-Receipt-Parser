@@ -1,10 +1,11 @@
 import { h, Component } from 'preact';
 import { Router } from 'preact-router';
-
+//const fs = require('fs');
 import Header from './header';
 
 // Code-splitting is automated for routes
 import Home from '../routes/home';
+import Upload from '../routes/upload';
 import Profile from '../routes/profile';
 
 export default class App extends Component {
@@ -23,6 +24,7 @@ export default class App extends Component {
 				<Header />
 				<Router onChange={this.handleRoute}>
 					<Home path="/" />
+					<Upload path="/upload/" />
 					<Profile path="/profile/" user="me" />
 					<Profile path="/profile/:user" />
 				</Router>

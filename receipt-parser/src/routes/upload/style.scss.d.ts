@@ -5,4 +5,5 @@ export const containerText: string;
 export const elem: string;
 export const button: string;
 export const container: string;
+export const filePreview: string;
 export const loading: string;

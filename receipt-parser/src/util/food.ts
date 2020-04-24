@@ -11,7 +11,7 @@ export class Food {
     nameCode: string;
     quantity: number;
     price: number;
-    id: number;
+    id?: number;
     constructor(nameCode: string, storeName: string, quantity:number, price: number) {
       this.nameCode = nameCode;
       this.storeName = storeName;

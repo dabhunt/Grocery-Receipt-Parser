@@ -1,18 +1,32 @@
-import { h, Component } from 'preact';
+import { h, Component, Fragment } from 'preact';
 //const unirest = eval(require('unirest'));
 // const unirest = require('unirest');
-
+var render = require('preact-render-to-string');
 //import * as interfaces from "../../util/food";
 import {Food} from "../../util/food";
 import {Receipt} from "../../util/receipt";
+import {replaceAll} from "../../util/utilities";
+import {removeNumbers} from "../../util/utilities";
+import {renderNode} from "../../util/utilities";
+import {tableCreator} from "../../util/tableCreator";
+import Result from '../../components/container/index';
+import ListFoods from '../../components/container/index';
+import Card from '../../components/card/index';
 import {StoreSpecificParsingRules as rules} from "../../util/receipt";
 import * as style from './style.scss';
+import { realpathSync } from 'fs';
+import * as preact from 'preact';
+
 
 const image = document.getElementById("uploadedImage") as HTMLInputElement;
 interface Props {
+	receipt: Receipt;
+};
 
-}
-export default class Upload extends Component<Props> {
+interface State {
+	showingReceipt: boolean;
+};
+export default class Upload extends Component<Props, State> {
 	/*
 	when the user inserts an image into the form, it automatically runs this, getting the file through the event passed in
 	*/
@@ -27,7 +41,6 @@ export default class Upload extends Component<Props> {
 			const targetFile = files[0];
 			try 
 			{
-				this.setState({imageFile : targetFile});
 				const objectURL = window.URL.createObjectURL(targetFile);
 				let img = document.createElement('img');
 				//display a loading gif
@@ -125,7 +138,7 @@ export default class Upload extends Component<Props> {
 	{
 		var str = JSON.stringify(json);
 		let userMessage:HTMLElement = document.getElementById("userMessage") as HTMLElement;
-		userMessage.innerText = "Getting food data...";
+		userMessage.innerHTML = "Getting food data...<br>";
 		let ParsedText = json.ParsedResults[0].ParsedText;
 		var split = ParsedText.split('\n');
 		var storeName;
@@ -156,6 +169,7 @@ export default class Upload extends Component<Props> {
 						
 						console.log("adding new food '"+item.nameCode+"'");
 						//convert to string for local storage
+						
 						let strFood = JSON.stringify(item);
 						window.localStorage.setItem(split[i],strFood);
 						item = localStorage.getItem(split[i]);
@@ -171,16 +185,21 @@ export default class Upload extends Component<Props> {
 	*/
 	searchFoodAPI = (receipt, num) =>
 	{
+		let userMessage:HTMLElement = document.getElementById("userMessage") as HTMLElement;
 		var updatedReceipt = new Receipt(new Date(),receipt.storeName,0);
 		updatedReceipt = receipt;
 		console.log("num" + num);
 		let str = updatedReceipt.foods[num].nameCode;
-		str.replace(' ','%20');
-		str.replace('\r','%20');
-		str.replace('OZ','%20');
-		var float = this.isNumeric(str);
-		if (float != null)
-			str.replace(float.toString(),'');
+		console.log("before: "+str);
+		str = removeNumbers(str);
+		//strings that should be replaced with '' Use space at the end
+		var removeStrings = [' OZ','ORGANIC', ' ORG', 'ORG ', ' CT'];
+		//strings that should be replaced with %20 to indicate a space for the query
+		var replaceEmptyStrings = ['\r',' '];
+		//replace characters in the string
+		str = replaceAll(str,removeStrings, '');
+		str = replaceAll(str,replaceEmptyStrings, '%20');
+		//str = this.removeNumbers(str);
 		console.log(str);
 		fetch('https://cors-anywhere.herokuapp.com/https://trackapi.nutritionix.com/v2/search/instant/?query='+str, {
 			method: 'GET',
@@ -190,15 +209,33 @@ export default class Upload extends Component<Props> {
 			},
 			}).then(response => response.json()
 			).then(json =>{
-				var food = json.common[0].food_name;
+				var foodtype = json.common[0].food_name;
+				var newFood = updatedReceipt.foods[num];
 				updatedReceipt.foods[num].id = json.common[0].tag_name;
-				updatedReceipt.foods[num].foodType = food;
-				console.log(food);
+				updatedReceipt.foods[num].foodType = foodtype;
 				num++;
-				//upon finishing 1 food request, perform another 
+				//temporary until I can do this a better way in preact
+				userMessage.innerHTML += "adding " + foodtype + " to database... <br>";
+			  
+				//userMessage.append(ListFoods());
+				console.log("adding " + foodtype + " to database...");
+				
+				//upon finishing 1 food request, perform another, like a giant for loop 
+				//if (num < updatedReceipt.foods.length)
+				const dom = (
+					<Card food={newFood} />
+				)
+				//this stuff isn't working yet
+
+				//h(dom,{newFood});
+				//userMessage.appendChild(dom);
+				//var table = render(tableCreator(updatedReceipt.foods))
+				//console.log(table);
+				//userMessage.append(table);
+				//let dom = render(newFood, userMessage);
 				if (num < updatedReceipt.foods.length)
 					this.searchFoodAPI(updatedReceipt,num);
-				//userMessage.append(link);
+				
 			}).catch(error => {
 				console.error(error);
 				alert('Search Failed. ' + error);
@@ -206,15 +243,7 @@ export default class Upload extends Component<Props> {
 			
 		return updatedReceipt;
 	}
-	//check if a string has a number in it. If it does, return that value
-	isNumeric = (str) =>
-	{
-		var num = parseFloat(str);
-		if (!isNaN(num))
-			return num;
-		else return null;
-	}
-	public render() {
+	public render({ receipt }: Props, { showingReceipt}: State) {
 		return (
 			<div>
 				<div class = {style.heroimage}>
@@ -225,8 +254,12 @@ export default class Upload extends Component<Props> {
 						
 						<input id="fileElem" onInput={ (event) => this.imageSelected(event) } type ='file' />
 						<br></br>
-						<img id="filePreview" src="#" >Select some files</img>
+						<img id="filePreview" class = {style.filePreview} src="#" >Select some files</img>
 						<div id="userMessage">No File Selected</div>
+						<div class="list">
+						<div class="list">
+						</div>
+						</div>
 					</div>
 				</div>
 				</div>
@@ -235,3 +268,5 @@ export default class Upload extends Component<Props> {
 		);
 	} 
 }
+
+

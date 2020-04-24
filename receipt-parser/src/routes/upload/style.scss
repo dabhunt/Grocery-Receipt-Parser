@@ -56,9 +56,10 @@ $hero-image-url: "/assets/photos/heroimage.jpg";
 	  padding: 5px;
 	  border-radius: 25px;
   }
+  .filePreview{
+	max-width:250px;
+  }
   #loading{
 	max-width: 80px;
-	max-inline-size: 80px;
-	width: 80px;
 	height: 60px;
   }

@@ -1,0 +1,19 @@
+@import '../../styles/variables.scss';
+@import '../../styles/main';
+.outer{
+	background-color: red;
+	display: grid;
+	display: grid;
+	grid-template-columns: 60px 60px 60px 60px 60px;
+	grid-template-rows: 30px 30px;
+	grid-auto-flow: row;
+}
+.image{
+	width: fit-content;
+}
+.item-a{
+	grid-column-start: 2;
+	grid-column-end: five;
+	grid-row-start: row1-start;
+	grid-row-end: 3;
+}

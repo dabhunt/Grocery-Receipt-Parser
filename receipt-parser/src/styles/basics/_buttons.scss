@@ -1,5 +1,5 @@
 @import '../variables';
-.button{
+.smallButton,.button{
 	background-color:$primaryColor;
 	border: none;
 	color: white;
@@ -9,7 +9,13 @@
 	text-align: center;
 	text-decoration: none;
 	display: inline-block;
-	font-size: 16px;
+	font-size: 1.5em;
 	margin: 4px 2px;
 	border-radius: 50px;
+  }
+  .smallButton {
+	padding: 15px;
+	padding-left: 35px;
+	padding-right: 35px;
+	font-size: 1em;
   }

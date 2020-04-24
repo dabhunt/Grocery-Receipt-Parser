@@ -1,0 +1,15 @@
+@import '../variables';
+@font-face{
+    font-family: 'Righteous';
+    src: url("https://fonts.googleapis.com/css2?family=Righteous&display=swap");
+}
+
+.headerText
+{
+	color: $textColor;
+	font-size: 1.5em;
+}
+.pText{
+	color: $textColor;
+	font-size: 1em;
+}

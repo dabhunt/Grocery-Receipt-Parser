@@ -8,5 +8,8 @@ node_modules
 !.vscode/extensions.json
 *.code-workspace
 
+# TODO: Figure out why this doesn't work
+*.scss.d.ts
+
 # Local History for Visual Studio Code
 .history/

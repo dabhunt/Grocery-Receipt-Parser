@@ -1,8 +1,4 @@
 import { h, Component, Fragment } from 'preact';
-//const unirest = eval(require('unirest'));
-// const unirest = require('unirest');
-var render = require('preact-render-to-string');
-//import * as interfaces from "../../util/food";
 import {Food} from "../../util/food";
 import {Receipt} from "../../util/receipt";
 import {replaceAll} from "../../util/utilities";
@@ -14,8 +10,6 @@ import ListFoods from '../../components/container/index';
 import Card from '../../components/card/index';
 import {StoreSpecificParsingRules as rules} from "../../util/receipt";
 import * as style from './style.scss';
-import { realpathSync } from 'fs';
-import * as preact from 'preact';
 
 
 const image = document.getElementById("uploadedImage") as HTMLInputElement;
@@ -25,11 +19,18 @@ interface Props {
 
 interface State {
 	showingReceipt: boolean;
+	userMessage: string;
+	foodItems: Food[];
 };
 export default class Upload extends Component<Props, State> {
 	/*
 	when the user inserts an image into the form, it automatically runs this, getting the file through the event passed in
 	*/
+	state:State = {
+		showingReceipt: false,
+		userMessage: 'Upload A File',
+		foodItems: []
+	}
 
 	imageSelected = (event) =>
 	  {
@@ -104,7 +105,6 @@ export default class Upload extends Component<Props, State> {
 	*/
 	OCRImage = (imgURL) =>
 	{
-		let userMessage:HTMLElement = document.getElementById("userMessage") as HTMLElement;
 		var receiptstr = localStorage.getItem("receiptJson");
 		//uncomment out the line below so that it uses the OCR API
 		//receiptstr = null;
@@ -112,7 +112,6 @@ export default class Upload extends Component<Props, State> {
 		//if there is already a receipt Json stored locally, parse it instead of using the OCR api
 		if (receiptstr != null)
 		{
-			userMessage.innerHTML = "Receipt found in local storage.";
 			receiptJson = JSON.parse(receiptstr);
 			this.convertToFoods(receiptJson);
 		} else{
@@ -122,7 +121,6 @@ export default class Upload extends Component<Props, State> {
 			method: 'GET',
 			}).then(response => response.json()
 			).then(json =>{
-				userMessage.innerHTML = "Receipt saved to local storage.";
 				receiptJson = json;
 				//convert to string so that it can be saved by local storage
 				let str = JSON.stringify(receiptJson);
@@ -137,8 +135,6 @@ export default class Upload extends Component<Props, State> {
 	convertToFoods = (json) =>
 	{
 		var str = JSON.stringify(json);
-		let userMessage:HTMLElement = document.getElementById("userMessage") as HTMLElement;
-		userMessage.innerHTML = "Getting food data...<br>";
 		let ParsedText = json.ParsedResults[0].ParsedText;
 		var split = ParsedText.split('\n');
 		var storeName;
@@ -159,20 +155,24 @@ export default class Upload extends Component<Props, State> {
 				if (split[i].charAt(0) == '@' || split[i].length < 5){}
 				else{
 					//get the food data if it's in the database
-					var item = JSON.parse(localStorage.getItem(split[i]));
+					var item:Food = JSON.parse(localStorage.getItem(split[i]));
 					console.log("adding '"+ split[i] +"' from localstorage");
 					//if this food code is not already in the database, add it
 					if (item == null){
 						//construct new food datatype 
-						item = new Food(split[i],storeName,1,2.1);
+						item = {
+							nameCode: split[i],
+							storeName: storeName,
+							quantity:1, 
+							price: 2.1
+						}
+						// item = new Food(split[i],storeName,1,2.1);
 						//newReceipt.foods.push(newFood);
-						
 						console.log("adding new food '"+item.nameCode+"'");
 						//convert to string for local storage
-						
 						let strFood = JSON.stringify(item);
 						window.localStorage.setItem(split[i],strFood);
-						item = localStorage.getItem(split[i]);
+						item = JSON.parse(localStorage.getItem(split[i]));
 					}
 					newReceipt.foods.push(item);
 				}
@@ -216,6 +216,9 @@ export default class Upload extends Component<Props, State> {
 				num++;
 				//temporary until I can do this a better way in preact
 				userMessage.innerHTML += "adding " + foodtype + " to database... <br>";
+				const foundFoods = this.state.foodItems;
+				foundFoods.push(updatedReceipt.foods[num])
+				this.setState({foodItems: foundFoods})
 			  
 				//userMessage.append(ListFoods());
 				console.log("adding " + foodtype + " to database...");
@@ -243,9 +246,9 @@ export default class Upload extends Component<Props, State> {
 			
 		return updatedReceipt;
 	}
-	public render({ receipt }: Props, { showingReceipt}: State) {
+	public render({ receipt }: Props, { showingReceipt, foodItems }: State) {
 		return (
-			<div>
+			<div class = {style.upload}>
 				<div class = {style.heroimage}>
 				<div class = {style.containerText}>
 				<div class = {style.elem}>
@@ -255,11 +258,14 @@ export default class Upload extends Component<Props, State> {
 						<input id="fileElem" onInput={ (event) => this.imageSelected(event) } type ='file' />
 						<br></br>
 						<img id="filePreview" class = {style.filePreview} src="#" >Select some files</img>
-						<div id="userMessage">No File Selected</div>
-						<div class="list">
+						{!showingReceipt && <div id="userMessage">No File Selected</div>}
+						{foodItems.map(food => {
+							return <Card food={food}/> 
+						})}
+						{/* <div class="list">
 						<div class="list">
 						</div>
-						</div>
+						</div> */}
 					</div>
 				</div>
 				</div>

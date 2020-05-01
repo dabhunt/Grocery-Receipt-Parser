@@ -2,7 +2,6 @@
 import { h, Fragment } from 'preact';
 import {Food} from "./food";
 var render = require('preact-render-to-string');
-//import render from 'preact-render-to-string';
 
 /**
  * This function returns a two-column table that can either be overloaded with a style class, or have some default
@@ -17,13 +16,13 @@ var render = require('preact-render-to-string');
  * component if toComponent is false
  */
 export function tableCreator(
-    foods: Food[],
+    props: Food[],
     className?: string,
     column1Name?: string,
     column2Name?: string,
     toComponent?: boolean): string | h.JSX.Element {
     //Accounting for if there are no choices selected in the array
-    if (foods.length >= 1) {
+    if (props.length >= 1) {
         let table: h.JSX.Element;
 
         if (className) {
@@ -36,7 +35,7 @@ export function tableCreator(
                         </tr>
                     </thead>
                     <tbody>
-                        {foods.map((item: Food, index: number) => {
+                        {props.map((item: Food, index: number) => {
                             // Only generate a table row when the value is true
                             if (item.foodType) {
                                 return <tr key={index}>
@@ -60,7 +59,7 @@ export function tableCreator(
                         </tr>
                     </thead>
                     <tbody>
-                        {foods.map((item: Food, index: number) => {
+                        {props.map((item: Food, index: number) => {
                             if (item.foodType) {
                                 return <tr key={index}>
                                     <td style="border: 1px solid black; text-align: left; padding: 4px;">{item.foodType}</td>

@@ -1,11 +1,10 @@
 @import '../../style/variables.scss';
 $hero-image-url: "/assets/photos/heroimage.jpg";
 .upload {
-	.home {
-		padding: 56px 20px;
-		min-height: 100%;
-		width: 100%;
-	}
+	justify-content: center;
+	margin-top:  55px;
+	min-height: 100%;
+	width: 100%;
 	.heroimage {
 		background-image:linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3)), url($hero-image-url);
 		height: 50%;
@@ -56,6 +55,14 @@ $hero-image-url: "/assets/photos/heroimage.jpg";
 		  background-color: $offWhite;
 		  padding: 5px;
 		  border-radius: 25px;
+	  }
+	  .foodMap{
+		max-height: 1000px;
+		justify-self: self-end;
+		align-items: flex-end;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
 	  }
 	  .filePreview{
 		max-width:250px;

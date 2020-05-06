@@ -1,11 +1,9 @@
 @import '../../style/variables.scss';
 $hero-image-url: "/assets/photos/heroimage.jpg";
 .home {
-	padding: 56px 20px;
+	padding-top: 55px;
 	min-height: 100%;
 	width: 100%;
-}
-
 .heroimage {
 	background-image:linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3)), url($hero-image-url);
 	height: 50%;
@@ -38,4 +36,5 @@ $hero-image-url: "/assets/photos/heroimage.jpg";
 	margin: 4px 2px;
 	border-radius: 50px;
   }
+}
 }

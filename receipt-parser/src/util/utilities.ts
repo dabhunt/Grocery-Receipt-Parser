@@ -16,6 +16,20 @@
 		}
 		return str;
     }
+    export function MakeSearchable(str)
+    {
+        str = removeNumbers(str);
+        //strings that should be replaced with '' Use space at the end
+		var removeStrings = [' OZ','ORGANIC', ' ORG', 'ORG ', ' CT'];
+		//strings that should be replaced with %20 to indicate a space for the query
+		var replaceEmptyStrings = ['\r','&','  ', ' ',];
+		//replace these characters in the string with empty strings
+		str = replaceAll(str,removeStrings, '');
+		//replace all space characters with %20
+		str = replaceAll(str,replaceEmptyStrings, '%20');
+        //str = this.removeNumbers(str);
+        return str;
+    }
     /*takes a virtual dom node as an argument and turns it into a real dom node
     */
     export function renderNode(vnode) {  

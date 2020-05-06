@@ -4,6 +4,7 @@ import {Receipt} from "../../util/receipt";
 import {replaceAll} from "../../util/utilities";
 import {removeNumbers} from "../../util/utilities";
 import {renderNode} from "../../util/utilities";
+import {MakeSearchable} from "../../util/utilities";
 import {tableCreator} from "../../util/tableCreator";
 import Result from '../../components/container/index';
 import ListFoods from '../../components/container/index';
@@ -19,19 +20,21 @@ interface Props {
 
 interface State {
 	showingReceipt: boolean;
+	showingImage: boolean;
 	userMessage: string;
 	foodItems: Food[];
 };
 export default class Upload extends Component<Props, State> {
-	/*
-	when the user inserts an image into the form, it automatically runs this, getting the file through the event passed in
-	*/
+
 	state:State = {
 		showingReceipt: false,
+		showingImage: false,
 		userMessage: 'Upload A File',
 		foodItems: []
 	}
-
+	/*
+	when the user inserts an image into the form, it automatically runs this, getting the file through the event passed in
+	*/
 	imageSelected = (event) =>
 	  {
 		let filePreview:HTMLImageElement = document.getElementById("filePreview") as HTMLImageElement;
@@ -42,17 +45,20 @@ export default class Upload extends Component<Props, State> {
 			const targetFile = files[0];
 			try 
 			{
+				this.setState({showingImage: true})
 				const objectURL = window.URL.createObjectURL(targetFile);
 				let img = document.createElement('img');
 				//display a loading gif
 				img.src = "/assets/photos/loading.gif";
-				//convert to the ass compatible version
+				//convert to the sass compatible version
 				img.id = style.loading.toString();
 				container.append(img);
 				filePreview.src = objectURL;
 				//upload image to database as soon as it's done loading
 				filePreview.onload = (evt) => {
-					this.uploadImage(targetFile)
+					this.OCRImage("https://i.imgur.com/ft21vh0.jpg");
+					//When not testing replace OCRImage with uploadImage(targetFile)
+					//this.uploadImage(targetFile)
 				};
 				const userMsg = document.getElementById("userMessage");
 				userMessage.innerHTML= "Loading image into database...";
@@ -115,9 +121,9 @@ export default class Upload extends Component<Props, State> {
 			receiptJson = JSON.parse(receiptstr);
 			this.convertToFoods(receiptJson);
 		} else{
-		//currently the image that is being parsed is a static picture of a receipt for testing purposes, switch out these lines when testing is over
-		//fetch('https://cors-anywhere.herokuapp.com/https://api.ocr.space/parse/imageurl?apikey=8038106a3788957&url='+imgURL, {
-		fetch('https://cors-anywhere.herokuapp.com/https://api.ocr.space/parse/imageurl?apikey=8038106a3788957&url=https://i.imgur.com/ft21vh0.jpg', {
+		//currently the image that is being parsed is a static picture of a receipt for testing purposes use the +imgURL version when done testing
+		//fetch('https://cors-anywhere.herokuapp.com/https://api.ocr.space/parse/imageurl?apikey=8038106a3788957&url=https://i.imgur.com/ft21vh0.jpg', {
+		fetch('https://cors-anywhere.herokuapp.com/https://api.ocr.space/parse/imageurl?apikey=8038106a3788957&url='+imgURL, {
 			method: 'GET',
 			}).then(response => response.json()
 			).then(json =>{
@@ -136,12 +142,12 @@ export default class Upload extends Component<Props, State> {
 	{
 		var str = JSON.stringify(json);
 		let ParsedText = json.ParsedResults[0].ParsedText;
-		var split = ParsedText.split('\n');
+		var split:string = ParsedText.split('\n');
 		var storeName;
 		var today = new Date();
 		var newReceipt = new Receipt(today,storeName,0);
 		for (var i = 0; i < split.length; i ++){
-			if (split[i].includes("Total"))
+			if (split[i].toUpperCase().includes("TOTAL"))
 				break;
 			if (i == 0){
 				//use the first line of the receipt to determine what store the receipt is from
@@ -166,40 +172,44 @@ export default class Upload extends Component<Props, State> {
 							quantity:1, 
 							price: 2.1
 						}
-						// item = new Food(split[i],storeName,1,2.1);
-						//newReceipt.foods.push(newFood);
 						console.log("adding new food '"+item.nameCode+"'");
 						//convert to string for local storage
 						let strFood = JSON.stringify(item);
 						window.localStorage.setItem(split[i],strFood);
-						item = JSON.parse(localStorage.getItem(split[i]));
-					}
+						//item = JSON.parse(localStorage.getItem(split[i]));
+					} 
 					newReceipt.foods.push(item);
 				}
 			}
 		}
 		newReceipt = this.searchFoodAPI(newReceipt, 0);
-		console.log(newReceipt);
+		//console.log(newReceipt);
 	}
 	/* Use the NutrionX API and search for each item from the receipt Json
 	*/
 	searchFoodAPI = (receipt, num) =>
 	{
+
 		let userMessage:HTMLElement = document.getElementById("userMessage") as HTMLElement;
 		var updatedReceipt = new Receipt(new Date(),receipt.storeName,0);
 		updatedReceipt = receipt;
-		console.log("num" + num);
 		let str = updatedReceipt.foods[num].nameCode;
+		//add the line below to force API search
+		//updatedReceipt.foods[num].foodType = null;
+		//if the food item in the database has already been searched for by the nutrionX api
+		if (updatedReceipt.foods[num].foodType != null)
+		{// then we don't need to fetch from the API, just check the next item in the receipt
+			const foundFoods = this.state.foodItems;
+			foundFoods.push(updatedReceipt.foods[num])
+			this.setState({foodItems: foundFoods})
+			num++;
+			if (num < updatedReceipt.foods.length)
+				this.searchFoodAPI(updatedReceipt,num);
+			return;	
+		}
 		console.log("before: "+str);
-		str = removeNumbers(str);
-		//strings that should be replaced with '' Use space at the end
-		var removeStrings = [' OZ','ORGANIC', ' ORG', 'ORG ', ' CT'];
-		//strings that should be replaced with %20 to indicate a space for the query
-		var replaceEmptyStrings = ['\r',' '];
-		//replace characters in the string
-		str = replaceAll(str,removeStrings, '');
-		str = replaceAll(str,replaceEmptyStrings, '%20');
-		//str = this.removeNumbers(str);
+		//Makes the string searchable by removing numbers, replacing spaces with %20, and more
+		str = MakeSearchable(str);
 		console.log(str);
 		fetch('https://cors-anywhere.herokuapp.com/https://trackapi.nutritionix.com/v2/search/instant/?query='+str, {
 			method: 'GET',
@@ -213,29 +223,23 @@ export default class Upload extends Component<Props, State> {
 				var newFood = updatedReceipt.foods[num];
 				updatedReceipt.foods[num].id = json.common[0].tag_name;
 				updatedReceipt.foods[num].foodType = foodtype;
-				num++;
+				
 				//temporary until I can do this a better way in preact
-				userMessage.innerHTML += "adding " + foodtype + " to database... <br>";
+				//userMessage.innerHTML += "adding " + foodtype + " to database... <br>";
 				const foundFoods = this.state.foodItems;
 				foundFoods.push(updatedReceipt.foods[num])
 				this.setState({foodItems: foundFoods})
-			  
-				//userMessage.append(ListFoods());
+				let strFood = JSON.stringify(updatedReceipt.foods[num]);
+				window.localStorage.setItem(updatedReceipt.foods[num].nameCode,strFood);
 				console.log("adding " + foodtype + " to database...");
-				
-				//upon finishing 1 food request, perform another, like a giant for loop 
-				//if (num < updatedReceipt.foods.length)
-				const dom = (
-					<Card food={newFood} />
-				)
-				//this stuff isn't working yet
-
 				//h(dom,{newFood});
 				//userMessage.appendChild(dom);
 				//var table = render(tableCreator(updatedReceipt.foods))
 				//console.log(table);
 				//userMessage.append(table);
 				//let dom = render(newFood, userMessage);
+				//upon finishing 1 food request, perform another, like a giant for loop
+				num++; 
 				if (num < updatedReceipt.foods.length)
 					this.searchFoodAPI(updatedReceipt,num);
 				
@@ -246,7 +250,7 @@ export default class Upload extends Component<Props, State> {
 			
 		return updatedReceipt;
 	}
-	public render({ receipt }: Props, { showingReceipt, foodItems }: State) {
+	public render({ receipt }: Props, { showingImage, showingReceipt, foodItems }: State) {
 		return (
 			<div class = {style.upload}>
 				<div class = {style.heroimage}>
@@ -257,15 +261,13 @@ export default class Upload extends Component<Props, State> {
 						
 						<input id="fileElem" onInput={ (event) => this.imageSelected(event) } type ='file' />
 						<br></br>
-						<img id="filePreview" class = {style.filePreview} src="#" >Select some files</img>
-						{!showingReceipt && <div id="userMessage">No File Selected</div>}
+						<img id="filePreview" class = {style.filePreview} src="#" ></img>
+						{!showingReceipt && <div id="userMessage">Select a File</div>}
+						<div id="grid" class = {style.foodMap}>
 						{foodItems.map(food => {
 							return <Card food={food}/> 
 						})}
-						{/* <div class="list">
-						<div class="list">
 						</div>
-						</div> */}
 					</div>
 				</div>
 				</div>
